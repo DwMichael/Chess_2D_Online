@@ -13,7 +13,7 @@
 #include <deque>
 #include <mutex>
 #include <vector>
-
+//#All rights reserved
 // #define LOG(x) (std::cout << (x) << std::endl)
 #define LOG(x)
 
