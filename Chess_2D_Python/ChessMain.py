@@ -2,17 +2,20 @@
 "It will also keep a move log"
 import pygame as p
 import ChessEngine
+# from client import Network
 
-WIDTH = HEIGHT = 720
+WIDTH = HEIGHT = 680
 DIMENSION = 8 #BOARD 8X8
 SQ_SIZE =HEIGHT // DIMENSION
-MAX_FPS = 15
+MAX_FPS = 60
 IMAGES={}
+
+clientNumber = 0
 
 
 #loading and transforming images
 def loadImages():
-    pieces = ["wieza_c","pionek_c","laufr_c","krol_c","kon_c","dama_c","wieza_b","pionek_b","laufr_b","krol_b","kon_b","dama_b"]
+    pieces = ["cW","cP","cL","cK","cH","cD","bW","bP","bL","bK","bH","bD"]
     for piece in pieces:
         IMAGES[piece]= p.transform.scale(p.image.load("images/"+piece+".png"),(SQ_SIZE,SQ_SIZE))
 
@@ -24,6 +27,8 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = ChessEngine.GameState()
+    validMoves = gs.getValidMoves()
+    moveMade =False
     loadImages() #only ones
     running = True
     sqSelected = ()
@@ -32,6 +37,7 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
                 running =False
+            #mouse tracking
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos() #(x,y) location of mouse
                 col = location[0] // SQ_SIZE
@@ -44,10 +50,23 @@ def main():
                     playerClicks.append(sqSelected)
                 if len(playerClicks) == 2:
                     move = ChessEngine.Move(playerClicks[0],playerClicks[1], gs.board)
-                    print(move.getChessNotation())
-                    gs.makeMove(move)
-                    sqSelected = () #reset user click
-                    playerClicks = []
+                    if move in validMoves:
+                        print(move.getChessNotation())
+                        gs.makeMove(move)
+                        moveMade = True
+                        sqSelected = () #reset user click
+                        playerClicks = []
+                    else:
+                        playerClicks=[sqSelected]
+
+            #key handler
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_z:
+                    gs.undoMove()
+                    moveMade =True
+        if moveMade:
+            validMoves = gs.getValidMoves()
+            moveMade = False
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
