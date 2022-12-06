@@ -2,7 +2,7 @@
 "It will also keep a move log"
 import pygame as p
 import ChessEngine
-# from client import Network
+from client import Network
 
 WIDTH = HEIGHT = 680
 DIMENSION = 8 #BOARD 8X8
@@ -31,9 +31,16 @@ def main():
     moveMade =False
     loadImages() #only ones
     running = True
-    sqSelected = ()
+
+    squareSelected = ()
     playerClicks = [] #keep track of player clicks
+
+    net = Network()
+
+    clicks = []
     while running:
+
+
         for e in p.event.get():
             if e.type == p.QUIT:
                 running =False
@@ -42,31 +49,31 @@ def main():
                 location = p.mouse.get_pos() #(x,y) location of mouse
                 col = location[0] // SQ_SIZE
                 row = location[1] // SQ_SIZE
-                if sqSelected == (row, col):
-                    sqSelected = ()
-                    playerClicks = []
-                else:
-                    sqSelected = (row, col)
-                    playerClicks.append(sqSelected)
-                if len(playerClicks) == 2:
-                    move = ChessEngine.Move(playerClicks[0],playerClicks[1], gs.board)
+                playerClicks.append((row, col))
+                if len(playerClicks) >= 2:
+
+                    move = ChessEngine.Move(playerClicks[-2],playerClicks[-1], gs.board)
                     if move in validMoves:
-                        print(move.getChessNotation())
-                        gs.makeMove(move)
-                        moveMade = True
-                        sqSelected = () #reset user click
-                        playerClicks = []
-                    else:
-                        playerClicks=[sqSelected]
+                        net.send(move.getChessNotation())
 
             #key handler
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z:
                     gs.undoMove()
                     moveMade =True
+
+        moves = net.read()
+        for move in moves:
+            m = ChessEngine.Move(move[0:2], move[2:4], gs.board)
+            gs.makeMove(m)
+            moveMade = True
+            playerClicks = []
+
+
         if moveMade:
             validMoves = gs.getValidMoves()
             moveMade = False
+
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
@@ -77,7 +84,6 @@ def drawGameState(screen, gs):
     drawBoard(screen) #draw squares on board
     #add in piece highlighting or move suggestions
     drawPieces(screen, gs.board)#draw pieces on board
-
 
 
 def drawBoard(screen):

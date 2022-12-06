@@ -1,0 +1,1 @@
+g++ server/*.cpp common/*.cpp chess/*.cpp -o srv -Wno-narrowing -I common -I server -I chess && ./srv

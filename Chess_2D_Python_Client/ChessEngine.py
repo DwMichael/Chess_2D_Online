@@ -13,7 +13,7 @@ class GameState():
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
-            ["bW", "bH","bL","bD","bK","bL", "bH","bW"]]
+            ["bW", "bH", "bL", "bD", "bK", "bL", "bH", "bW"]]
         self.moveFunction = {"P":self.getPawnMoves ,"W":self.getWiezaMoves,"H":self.getKonMoves, "L": self.getLaufrMoves,"D":self.getDamaMoves,"K":self.getKrolMoves}
         self.whiteToMove = True
         self.moveLog= []
@@ -25,6 +25,8 @@ class GameState():
     #dobre
     
     def makeMove(self, move):
+        print(self.board[move.startRow][move.startCol])
+        print(move.startRow, move.startCol)
         if self.board[move.startRow][move.startCol] != '--':
             self.board[move.startRow][move.startCol] = '--'
             self.board[move.endRow][move.endCol] = move.pieceMoved
@@ -307,13 +309,27 @@ class Move():
 
 
     def __init__(self,startSq, endSq, board):
-        self.startRow = startSq[0]
-        self.startCol = startSq[1]
-        self.endRow = endSq[0]
-        self.endCol = endSq[1]
+        self.startSq = startSq
+        self.endSq = endSq
+
+        if isinstance(startSq, str):
+            # print("here")
+            self.startSq = [self.ranksToRows[startSq[1]], self.filesToCols[startSq[0]]]
+        # print(self.startSq)
+
+        if isinstance(endSq, str):
+            self.endSq = [self.ranksToRows[endSq[1]], self.filesToCols[endSq[0]]]
+
+        self.startRow = self.startSq[0]
+        self.startCol = self.startSq[1]
+        self.endRow = self.endSq[0]
+        self.endCol = self.endSq[1]
+        # print(self.startRow)
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
         self.moveID = self.startRow*1000+self.startCol*100+self.endRow*10+self.endCol
+
+
 
     def __eq__(self,other):
         if isinstance(other,Move):
